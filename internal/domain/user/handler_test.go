@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	repositoryMock "go-boilerplate/internal/repository/mock"
 	"go-boilerplate/services/kafka"
 	"io"
 	"net/http"
@@ -18,13 +19,14 @@ import (
 
 func TestHandlePostUser(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	kafkaMock := kafka.KafkaSpy{}
-	userService := NewuserService(kafkaMock)
+	kafkaMock := kafka.KafkaMock{}
+	repositoryMock := repositoryMock.UserRepositoryMock{}
+	userService := NewUserService(kafkaMock, repositoryMock)
 	Router(&gin.Default().RouterGroup, userService)
 	path := "/user/v1/"
 
 	t.Run("Should return error when payload is empty", func(t *testing.T) {
-		userService := NewuserService(kafkaMock)
+		userService := NewUserService(kafkaMock, repositoryMock)
 		userHandler := NewUserHandler(userService)
 		w := httptest.NewRecorder()
 		ctx, _ := gin.CreateTestContext(w)
@@ -36,14 +38,14 @@ func TestHandlePostUser(t *testing.T) {
 
 	t.Run("Should return error when the given params are of different types than the expected", func(t *testing.T) {
 		mockRequest := map[string]interface{}{
-			"client_id": 123,
+			"name": 123,
 		}
 
 		requestBytes, _ := json.Marshal(mockRequest)
 		ioReader := bytes.NewBuffer(requestBytes)
 		ioRequest := io.NopCloser(ioReader)
 
-		userService := NewuserService(kafkaMock)
+		userService := NewUserService(kafkaMock, repositoryMock)
 		userHandler := NewUserHandler(userService)
 
 		w := httptest.NewRecorder()
@@ -61,16 +63,15 @@ func TestHandlePostUser(t *testing.T) {
 
 	t.Run("Should return a validation error", func(t *testing.T) {
 		mockRequest := PostUserRequest{
-			Amount:   -123.00,
-			ClientID: uuid.NewString(),
-			StoreID:  uuid.NewString(),
+			Name:  gofakeit.Name(),
+			Email: "not valid email",
 		}
 
 		requestBytes, _ := json.Marshal(mockRequest)
 		ioReader := bytes.NewBuffer(requestBytes)
 		ioRequest := io.NopCloser(ioReader)
 
-		userService := NewuserService(kafkaMock)
+		userService := NewUserService(kafkaMock, repositoryMock)
 		userHandler := NewUserHandler(userService)
 
 		w := httptest.NewRecorder()
@@ -82,19 +83,17 @@ func TestHandlePostUser(t *testing.T) {
 		response, _ := io.ReadAll(w.Body)
 
 		assert.Equal(t, http.StatusBadRequest, w.Code)
-		assert.Contains(t, string(response), "amount must be a positive number")
+		assert.Contains(t, string(response), ErrEmailInvalid.Error())
 	})
 
 	t.Run("Should return an service error", func(t *testing.T) {
-		errorMessage := "error to save user transaction"
+		errorMessage := "error to save user"
 		mockRequest := PostUserRequest{
-			Amount:            123.00,
-			ClientID:          uuid.NewString(),
-			StoreID:           uuid.NewString(),
-			NotificationEmail: gofakeit.Email(),
+			Name:  gofakeit.Name(),
+			Email: gofakeit.Email(),
 		}
 
-		userService := UserServiceSpy{
+		userService := UserServiceMock{
 			PostUserResponse: PostUserResponse{},
 			PostUserError:    errors.New(errorMessage),
 		}
@@ -119,13 +118,11 @@ func TestHandlePostUser(t *testing.T) {
 
 	t.Run("Should create the user", func(t *testing.T) {
 		mockRequest := PostUserRequest{
-			Amount:            123.00,
-			ClientID:          uuid.NewString(),
-			StoreID:           uuid.NewString(),
-			NotificationEmail: gofakeit.Email(),
+			Name:  gofakeit.Name(),
+			Email: gofakeit.Email(),
 		}
 
-		userService := UserServiceSpy{
+		userService := UserServiceMock{
 			PostUserResponse: PostUserResponse{
 				uuid.NewString(),
 			},

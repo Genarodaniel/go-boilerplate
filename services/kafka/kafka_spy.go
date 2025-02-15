@@ -2,10 +2,10 @@ package kafka
 
 import "context"
 
-type KafkaSpy struct {
+type KafkaMock struct {
 	ProduceError error
 }
 
-func (k KafkaSpy) Produce(ctx context.Context, topic string, key string, body any) error {
+func (k KafkaMock) Produce(ctx context.Context, topic string, key string, body any) error {
 	return k.ProduceError
 }

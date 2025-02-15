@@ -1,4 +1,4 @@
-package order
+package user
 
 import (
 	"context"
@@ -15,22 +15,16 @@ func NewOrderRepository(db *sql.DB) *OrderRepository {
 	}
 }
 
-func (r *OrderRepository) Save(ctx context.Context, order Order) (string, error) {
+func (r *OrderRepository) Save(ctx context.Context, user User) (string, error) {
 	var id string
 	var query = `
-		INSERT INTO tab_order(
-			id,
-			store_id,
-			client_id,
-			current_status,
-			notification_email
+		INSERT INTO tab_user(
+			name,
+			email
 		)
 		VALUES(
 			$1,
-			$2,
-			$3,
-			$4,
-			$5
+			$2
 		)
 		RETURNING id
 	`
@@ -42,11 +36,8 @@ func (r *OrderRepository) Save(ctx context.Context, order Order) (string, error)
 	defer stmt.Close()
 
 	result, err := stmt.QueryContext(ctx,
-		order.ID,
-		order.StoreID,
-		order.ClientID,
-		order.Status,
-		order.NotificationEmail,
+		user.Name,
+		user.Email,
 	)
 	if err != nil {
 		return id, err

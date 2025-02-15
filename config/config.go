@@ -7,19 +7,17 @@ import (
 )
 
 type Env struct {
-	DBHost          string `mapstructure:"DB_HOST"`
-	DBDriver        string `mapstructure:"DB_DRIVER"`
-	DBUser          string `mapstructure:"DB_USER"`
-	DBPassword      string `mapstructure:"DB_PASSWORD"`
-	DBName          string `mapstructure:"DB_NAME"`
-	DBPort          string `mapstructure:"DB_PORT"`
-	ServerPort      string `mapstructure:"SERVER_PORT"`
-	GinMode         string `mapstructure:"GIN_MODE"`
-	KafkaHost       string `mapstructure:"KAFKA_HOST"`
-	KafkaPort       string `mapstructure:"KAFKA_PORT"`
-	KafkaTopicOrder string `mapstructure:"KAFKA_TOPIC_ORDER"`
-	KafkaTopics     []string
-	KafkaSeeds      []string
+	DBHost     string `mapstructure:"DB_HOST"`
+	DBDriver   string `mapstructure:"DB_DRIVER"`
+	DBUser     string `mapstructure:"DB_USER"`
+	DBPassword string `mapstructure:"DB_PASSWORD"`
+	DBName     string `mapstructure:"DB_NAME"`
+	DBPort     string `mapstructure:"DB_PORT"`
+	ServerPort string `mapstructure:"SERVER_PORT"`
+	GinMode    string `mapstructure:"GIN_MODE"`
+	KafkaHost  string `mapstructure:"KAFKA_HOST"`
+	KafkaPort  string `mapstructure:"KAFKA_PORT"`
+	KafkaSeeds []string
 }
 
 var Config Env
@@ -39,7 +37,6 @@ func Load() error {
 	}
 
 	Config.KafkaSeeds = []string{fmt.Sprintf("%s:%s", Config.KafkaHost, Config.KafkaPort)}
-	Config.KafkaTopics = []string{Config.KafkaTopicOrder}
 
 	return nil
 }

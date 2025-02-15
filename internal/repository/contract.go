@@ -2,9 +2,9 @@ package repository
 
 import (
 	"context"
-	"go-boilerplate/internal/repository/order"
+	"go-boilerplate/internal/repository/user"
 )
 
-type OrderRepositoryInterface interface {
-	Save(ctx context.Context, order order.Order) (string, error)
+type UserRepositoryInterface interface {
+	Save(ctx context.Context, order user.User) (string, error)
 }

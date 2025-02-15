@@ -3,14 +3,6 @@ package user
 import (
 	"errors"
 	"go-boilerplate/pkg/validation"
-
-	"github.com/google/uuid"
-)
-
-type UserStatus string
-
-const (
-	UserStatusCreated UserStatus = "created"
 )
 
 type PostUserResponse struct {
@@ -18,29 +10,25 @@ type PostUserResponse struct {
 }
 
 type PostUserRequest struct {
-	ClientID          string  `json:"client_id"`
-	StoreID           string  `json:"store_id"`
-	NotificationEmail string  `json:"notification_email"`
-	Status            string  `json:"status"`
-	UserID            string  `json:"user_id"`
-	Amount            float64 `json:"amount"`
+	Email string `json:"email"`
+	Name  string `json:"name"`
 }
 
-func (request *PostUserRequest) Validate() error {
-	if request.Amount <= 0 {
-		return errors.New("amount must be a positive number")
+var ErrNameRequired error = errors.New("name is required")
+var ErrEmailRequired error = errors.New("email is required")
+var ErrEmailInvalid error = errors.New("email is invalid")
+
+func (user *PostUserRequest) Validate() error {
+	if len(user.Name) == 0 {
+		return ErrNameRequired
 	}
 
-	if err := uuid.Validate(request.ClientID); err != nil {
-		return errors.New("client_id must be a uuid")
+	if len(user.Email) == 0 {
+		return ErrEmailRequired
 	}
 
-	if err := uuid.Validate(request.StoreID); err != nil {
-		return errors.New("store_id must be a uuid")
-	}
-
-	if valid := validation.ValidateEmail(request.NotificationEmail); !valid {
-		return errors.New("notification_email invalid")
+	if valid := validation.ValidateEmail(user.Email); !valid {
+		return ErrEmailInvalid
 	}
 
 	return nil

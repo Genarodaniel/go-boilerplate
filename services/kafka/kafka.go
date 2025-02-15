@@ -17,10 +17,9 @@ type Kafka struct {
 	Client *kgo.Client
 }
 
-func NewKafka(seeds []string, topics []string) (KafkaInterface, error) {
+func NewKafka(seeds []string) (KafkaInterface, error) {
 	client, err := kgo.NewClient(
 		kgo.SeedBrokers(seeds...),
-		kgo.ConsumeTopics(topics...),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create Kafka client: %s", err.Error())

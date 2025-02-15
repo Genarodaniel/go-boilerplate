@@ -45,9 +45,9 @@ func Connect() *sql.DB {
 func Migrate(db *sql.DB) {
 	driver, err := postgres.WithInstance(db, &postgres.Config{})
 	m := &migrate.Migrate{}
-	m, err = migrate.NewWithDatabaseInstance("file:..//internal/infra/database/migrations", config.Config.DBDriver, driver)
+	m, err = migrate.NewWithDatabaseInstance("file:..//database/migrations", config.Config.DBDriver, driver)
 	if err != nil {
-		m, err = migrate.NewWithDatabaseInstance("file://internal/infra/database/migrations", config.Config.DBDriver, driver)
+		m, err = migrate.NewWithDatabaseInstance("file://database/migrations", config.Config.DBDriver, driver)
 		if err != nil {
 			panic(err)
 		}

@@ -1,9 +1,7 @@
-package order
+package user
 
-type Order struct {
-	ID                string
-	ClientID          string
-	StoreID           string
-	Status            string
-	NotificationEmail string
+type User struct {
+	ID    string
+	Name  string
+	Email string
 }

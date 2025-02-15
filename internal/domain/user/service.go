@@ -2,9 +2,9 @@ package user
 
 import (
 	"context"
+	"go-boilerplate/internal/repository"
+	userRepository "go-boilerplate/internal/repository/user"
 	"go-boilerplate/services/kafka"
-
-	"github.com/google/uuid"
 )
 
 type UserServiceInterface interface {
@@ -12,23 +12,33 @@ type UserServiceInterface interface {
 }
 
 type UserService struct {
-	KafkaProducer kafka.KafkaInterface
+	KafkaProducer  kafka.KafkaInterface
+	UserRepository repository.UserRepositoryInterface
 }
 
-func NewuserService(kafkaProducer kafka.KafkaInterface) *UserService {
+func NewUserService(kafkaProducer kafka.KafkaInterface, userRepository repository.UserRepositoryInterface) *UserService {
 	return &UserService{
-		KafkaProducer: kafkaProducer,
+		KafkaProducer:  kafkaProducer,
+		UserRepository: userRepository,
 	}
 }
 
 func (s *UserService) PostUser(ctx context.Context, user *PostUserRequest) (*PostUserResponse, error) {
-	user.UserID = uuid.NewString()
-	user.Status = string(UserStatusCreated)
-	if err := s.KafkaProducer.Produce(ctx, "users", "user.create", user); err != nil {
+	userDto := userRepository.User{
+		Name:  user.Name,
+		Email: user.Email,
+	}
+
+	userID, err := s.UserRepository.Save(ctx, userDto)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := s.KafkaProducer.Produce(ctx, "users", "user.create", userDto); err != nil {
 		return nil, err
 	}
 
 	return &PostUserResponse{
-		UserID: user.UserID,
+		UserID: userID,
 	}, nil
 }
