@@ -1,7 +1,7 @@
 package user_test
 
 import (
-	"go-boilerplate/internal/domain/user"
+	"go-boilerplate/internal/app/user"
 	"testing"
 
 	"github.com/brianvoe/gofakeit/v6"

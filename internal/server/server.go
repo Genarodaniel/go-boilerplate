@@ -2,8 +2,8 @@ package server
 
 import (
 	"database/sql"
-	"go-boilerplate/internal/domain/healthcheck"
-	"go-boilerplate/internal/domain/user"
+	"go-boilerplate/internal/app/healthcheck"
+	"go-boilerplate/internal/app/user"
 	userRepository "go-boilerplate/internal/repository/user"
 	"go-boilerplate/services/kafka"
 
