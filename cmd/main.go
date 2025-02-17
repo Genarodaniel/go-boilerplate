@@ -5,6 +5,9 @@ import (
 	"go-boilerplate/database"
 	"go-boilerplate/internal/server"
 	"go-boilerplate/services/kafka"
+	"log"
+	"os"
+	"os/signal"
 )
 
 func main() {
@@ -12,17 +15,37 @@ func main() {
 		panic(err)
 	}
 
-	db := database.Connect()
-	database.Migrate(db)
+	db, err := database.Connect()
+	if err != nil {
+		panic(err)
+	}
 
-	defer db.Close()
+	database.Migrate(db)
 
 	kafkaClient, err := kafka.NewKafka(config.Config.KafkaSeeds)
 	if err != nil {
 		panic(err)
 	}
 
+	atInterruption(func() {
+		log.Printf("closing DB connection")
+		db.Close()
+		log.Printf("DB connection closed")
+		log.Printf("Server shutdown")
+	})
+
 	s := server.Init(&kafkaClient, db)
 	s.Run()
 
+}
+
+func atInterruption(fn func()) {
+	go func() {
+		sc := make(chan os.Signal, 1)
+		signal.Notify(sc, os.Interrupt)
+		<-sc
+
+		fn()
+		os.Exit(1)
+	}()
 }

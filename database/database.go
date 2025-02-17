@@ -12,7 +12,7 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
-func Connect() *sql.DB {
+func Connect() (*sql.DB, error) {
 	connectionString := fmt.Sprintf(
 		"user=%s password=%s dbname=%s host=%s port=%s sslmode=%s",
 		config.Config.DBUser,
@@ -27,7 +27,7 @@ func Connect() *sql.DB {
 
 	db, err := sql.Open(config.Config.DBDriver, connectionString)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	db.SetMaxOpenConns(0)
@@ -35,11 +35,10 @@ func Connect() *sql.DB {
 	fmt.Println(db.Stats().MaxIdleClosed)
 
 	if err := db.Ping(); err != nil {
-		db.Close()
-		panic(err)
+		return nil, err
 	}
 
-	return db
+	return db, nil
 }
 
 func Migrate(db *sql.DB) {

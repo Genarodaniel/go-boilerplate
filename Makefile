@@ -10,10 +10,10 @@ go test ./... -coverprofile=coverage.out && go tool cover -html=coverage.out
 
 TODO LIST:
 
-1 - FIND A LOG LIBRARY
-2 - gracefully shutdown
-3 - get/put methods. 
-4 - OTEL use open telemetry
-5 - LEARN HOW TO TERRAFORM EC2/ECS AND RDS
-6 - CI/CD
-7 - README.MD
+1 - swagger
+2 - JWT
+2 - get/put/delete methods.
+3 - OTEL use open telemetry / FIND A LOG LIBRARY
+4 - LEARN HOW TO TERRAFORM EC2/ECS AND RDS
+5 - CI/CD
+6 - README.MD
