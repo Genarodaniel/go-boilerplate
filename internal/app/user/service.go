@@ -8,7 +8,8 @@ import (
 )
 
 type UserServiceInterface interface {
-	PostUser(ctx context.Context, user *PostUserRequest) (*PostUserResponse, error)
+	PostUser(ctx context.Context, user User) (*User, error)
+	GetUser(ctx context.Context, userID string) (*User, error)
 }
 
 type UserService struct {
@@ -23,8 +24,8 @@ func NewUserService(kafkaProducer kafka.KafkaInterface, userRepository repositor
 	}
 }
 
-func (s *UserService) PostUser(ctx context.Context, user *PostUserRequest) (*PostUserResponse, error) {
-	userDto := userRepository.User{
+func (s *UserService) PostUser(ctx context.Context, user User) (*User, error) {
+	userDto := userRepository.UserDTO{
 		Name:  user.Name,
 		Email: user.Email,
 	}
@@ -34,11 +35,20 @@ func (s *UserService) PostUser(ctx context.Context, user *PostUserRequest) (*Pos
 		return nil, err
 	}
 
-	if err := s.KafkaProducer.Produce(ctx, "users", "user.create", userDto); err != nil {
+	user.ID = userID
+	if err := s.KafkaProducer.Produce(ctx, "users", "user.create", user); err != nil {
 		return nil, err
 	}
 
-	return &PostUserResponse{
-		UserID: userID,
-	}, nil
+	return &user, nil
+}
+
+func (s *UserService) GetUser(ctx context.Context, userID string) (*User, error) {
+	userDto, err := s.UserRepository.GetByID(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return User{}.ToEntity(userDto), nil
+
 }

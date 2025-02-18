@@ -1,6 +1,6 @@
 package user
 
-type User struct {
+type UserDTO struct {
 	ID    string
 	Name  string
 	Email string

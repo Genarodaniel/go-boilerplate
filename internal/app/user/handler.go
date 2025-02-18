@@ -9,6 +9,7 @@ import (
 
 type UserHandlerInterface interface {
 	HandlePostUser(ctx *gin.Context)
+	HandleGetUser(ctx *gin.Context)
 }
 
 type UserHandler struct {
@@ -39,7 +40,7 @@ func (h *UserHandler) HandlePostUser(ctx *gin.Context) {
 		return
 	}
 
-	resp, err := h.UserService.PostUser(ctx, request)
+	resp, err := h.UserService.PostUser(ctx, *request.ToEntity())
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, response.DefaultErrorResponse{
 			Error:   true,
@@ -49,4 +50,27 @@ func (h *UserHandler) HandlePostUser(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusCreated, resp)
+}
+
+func (h *UserHandler) HandleGetUser(ctx *gin.Context) {
+	userID := ctx.Param("id")
+	userRequest := GetUserRequest(userID)
+	if err := userRequest.Validate(); err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, response.DefaultErrorResponse{
+			Error:   true,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	resp, err := h.UserService.GetUser(ctx, userID)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, response.DefaultErrorResponse{
+			Error:   true,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, resp)
 }

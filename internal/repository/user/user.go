@@ -15,7 +15,7 @@ func NewOrderRepository(db *sql.DB) *OrderRepository {
 	}
 }
 
-func (r *OrderRepository) Save(ctx context.Context, user User) (string, error) {
+func (r *OrderRepository) Save(ctx context.Context, user UserDTO) (string, error) {
 	var id string
 	var query = `
 		INSERT INTO tab_user(
@@ -49,4 +49,34 @@ func (r *OrderRepository) Save(ctx context.Context, user User) (string, error) {
 	)
 
 	return id, nil
+}
+
+func (r *OrderRepository) GetByID(ctx context.Context, userID string) (UserDTO, error) {
+	var user UserDTO
+	var query = `
+		SELECT
+			id,
+			name,
+			email
+		FROM tab_user
+		WHERE id = $1
+	`
+	stmt, err := r.DB.Prepare(query)
+	if err != nil {
+		return user, err
+	}
+
+	defer stmt.Close()
+
+	result := stmt.QueryRowContext(ctx, userID)
+	err = result.Scan(
+		&user.ID,
+		&user.Name,
+		&user.Email,
+	)
+	if err != nil {
+		return user, err
+	}
+
+	return user, nil
 }

@@ -94,8 +94,8 @@ func TestHandlePostUser(t *testing.T) {
 		}
 
 		userService := UserServiceMock{
-			PostUserResponse: PostUserResponse{},
-			PostUserError:    errors.New(errorMessage),
+			UserResponse:  User{},
+			PostUserError: errors.New(errorMessage),
 		}
 
 		requestBytes, _ := json.Marshal(mockRequest)
@@ -123,8 +123,8 @@ func TestHandlePostUser(t *testing.T) {
 		}
 
 		userService := UserServiceMock{
-			PostUserResponse: PostUserResponse{
-				uuid.NewString(),
+			UserResponse: User{
+				ID: uuid.NewString(),
 			},
 			PostUserError: nil,
 		}
@@ -145,5 +145,66 @@ func TestHandlePostUser(t *testing.T) {
 
 		assert.Equal(t, http.StatusCreated, w.Code)
 		assert.Contains(t, string(response), "user_id")
+	})
+}
+
+func TestHandleGetUser(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	kafkaMock := kafka.KafkaMock{}
+	repositoryMock := repositoryMock.UserRepositoryMock{}
+	userService := NewUserService(kafkaMock, repositoryMock)
+	Router(&gin.Default().RouterGroup, userService)
+	path := "/user/v1/:id"
+
+	t.Run("Should return error when user ID is invalid", func(t *testing.T) {
+		userService := NewUserService(kafkaMock, repositoryMock)
+		userHandler := NewUserHandler(userService)
+		w := httptest.NewRecorder()
+		ctx, _ := gin.CreateTestContext(w)
+		ctx.Request = httptest.NewRequest(http.MethodGet, path, nil)
+		ctx.Params = gin.Params{gin.Param{Key: "id", Value: "invalid-uuid"}}
+		userHandler.HandleGetUser(ctx)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+	})
+
+	t.Run("Should return error when user not found", func(t *testing.T) {
+		userService := UserServiceMock{
+			GetUserError: errors.New("user not found"),
+		}
+		userHandler := NewUserHandler(userService)
+		w := httptest.NewRecorder()
+		ctx, _ := gin.CreateTestContext(w)
+		ctx.Request = httptest.NewRequest(http.MethodGet, path, nil)
+		ctx.Params = gin.Params{gin.Param{Key: "id", Value: uuid.NewString()}}
+		userHandler.HandleGetUser(ctx)
+
+		response, _ := io.ReadAll(w.Body)
+
+		assert.Equal(t, http.StatusInternalServerError, w.Code)
+		assert.Contains(t, string(response), "user not found")
+	})
+
+	t.Run("Should return user details", func(t *testing.T) {
+		userID := uuid.NewString()
+		userService := UserServiceMock{
+			UserResponse: User{
+				ID:    userID,
+				Name:  gofakeit.Name(),
+				Email: gofakeit.Email(),
+			},
+			GetUserError: nil,
+		}
+		userHandler := NewUserHandler(userService)
+		w := httptest.NewRecorder()
+		ctx, _ := gin.CreateTestContext(w)
+		ctx.Request = httptest.NewRequest(http.MethodGet, path, nil)
+		ctx.Params = gin.Params{gin.Param{Key: "id", Value: userID}}
+		userHandler.HandleGetUser(ctx)
+
+		response, _ := io.ReadAll(w.Body)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+		assert.Contains(t, string(response), userID)
 	})
 }

@@ -4,10 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"go-boilerplate/config"
 	"sync"
+	"time"
 
 	"github.com/twmb/franz-go/pkg/kgo"
 )
+
+const maxRetries = 3
 
 type KafkaInterface interface {
 	Produce(ctx context.Context, topic string, key string, body any) error
@@ -20,6 +24,11 @@ type Kafka struct {
 func NewKafka(seeds []string) (KafkaInterface, error) {
 	client, err := kgo.NewClient(
 		kgo.SeedBrokers(seeds...),
+		kgo.RecordRetries(3),
+		kgo.RetryBackoffFn(func(retries int) time.Duration {
+			return time.Duration(retries) * 100 * time.Millisecond
+		}),
+		kgo.ProduceRequestTimeout(time.Duration(config.Config.KafkaTimeout)*time.Second),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create Kafka client: %s", err.Error())
@@ -38,10 +47,11 @@ func (k *Kafka) Produce(ctx context.Context, topic string, key string, body any)
 
 	var wg sync.WaitGroup
 	var mutex sync.Mutex
+	var errReturn error
+
 	wg.Add(1)
 	record := &kgo.Record{Topic: topic, Value: payload, Key: []byte(key)}
 
-	var errReturn error
 	k.Client.Produce(ctx, record, func(_ *kgo.Record, err error) {
 		defer wg.Done()
 		if err != nil {
@@ -51,10 +61,10 @@ func (k *Kafka) Produce(ctx context.Context, topic string, key string, body any)
 		}
 
 	})
+
 	wg.Wait()
 	return errReturn
 }
-
 func (k *Kafka) SerializePayload(body any) ([]byte, error) {
 	response, err := json.Marshal(body)
 	if err != nil {

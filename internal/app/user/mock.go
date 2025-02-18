@@ -4,10 +4,16 @@ import "context"
 
 type UserServiceMock struct {
 	UserServiceInterface
-	PostUserResponse PostUserResponse
-	PostUserError    error
+	UserResponse    User
+	PostUserError   error
+	GetUserResponse GetUserResponse
+	GetUserError    error
 }
 
-func (s UserServiceMock) PostUser(ctx context.Context, user *PostUserRequest) (*PostUserResponse, error) {
-	return &s.PostUserResponse, s.PostUserError
+func (s UserServiceMock) PostUser(ctx context.Context, user User) (*User, error) {
+	return &s.UserResponse, s.PostUserError
+}
+
+func (s UserServiceMock) GetUser(ctx context.Context, userID string) (*User, error) {
+	return &s.UserResponse, s.GetUserError
 }

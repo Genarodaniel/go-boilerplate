@@ -3,6 +3,7 @@ package user
 import (
 	"errors"
 	repositoryMock "go-boilerplate/internal/repository/mock"
+	userRepository "go-boilerplate/internal/repository/user"
 	"go-boilerplate/services/kafka"
 	"net/http/httptest"
 	"testing"
@@ -18,7 +19,7 @@ func TestPostUser(t *testing.T) {
 	w := httptest.NewRecorder()
 	ctx, _ := gin.CreateTestContext(w)
 
-	requestSuccess := &PostUserRequest{
+	requestSuccess := User{
 		Name:  gofakeit.Name(),
 		Email: gofakeit.Email(),
 	}
@@ -30,7 +31,7 @@ func TestPostUser(t *testing.T) {
 
 		assert.NotNil(t, response)
 		assert.Nil(t, err)
-		assert.Nil(t, uuid.Validate(response.UserID))
+		assert.Nil(t, uuid.Validate(response.ID))
 	})
 
 	t.Run("should return an error when calling db to create order", func(t *testing.T) {
@@ -64,4 +65,39 @@ func TestPostUser(t *testing.T) {
 		assert.EqualError(t, err, "error to conect to kafka")
 	})
 
+}
+
+func TestGetUser(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	w := httptest.NewRecorder()
+	ctx, _ := gin.CreateTestContext(w)
+
+	userID := gofakeit.UUID()
+	userDto := userRepository.UserDTO{
+		ID:    userID,
+		Name:  gofakeit.Name(),
+		Email: gofakeit.Email(),
+	}
+
+	t.Run("should return a user when user exists", func(t *testing.T) {
+		userService := NewUserService(kafka.KafkaMock{}, repositoryMock.UserRepositoryMock{
+			GetUserResponse: userDto,
+		})
+		response, err := userService.GetUser(ctx, userID)
+
+		assert.NotNil(t, response)
+		assert.Nil(t, err)
+		assert.Equal(t, userID, response.ID)
+	})
+
+	t.Run("should return an error when user does not exist", func(t *testing.T) {
+		userService := NewUserService(kafka.KafkaMock{}, repositoryMock.UserRepositoryMock{
+			GetUserError: errors.New("user not found"),
+		})
+		response, err := userService.GetUser(ctx, userID)
+
+		assert.Nil(t, response)
+		assert.NotNil(t, err)
+		assert.EqualError(t, err, "user not found")
+	})
 }

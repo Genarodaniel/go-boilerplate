@@ -10,8 +10,14 @@ type UserRepositoryMock struct {
 	repository.UserRepositoryInterface
 	SaveUserResponse string
 	SaveUserError    error
+	GetUserResponse  user.UserDTO
+	GetUserError     error
 }
 
-func (s UserRepositoryMock) Save(ctx context.Context, user user.User) (string, error) {
+func (s UserRepositoryMock) Save(ctx context.Context, user user.UserDTO) (string, error) {
 	return s.SaveUserResponse, s.SaveUserError
+}
+
+func (s UserRepositoryMock) GetByID(ctx context.Context, userID string) (user.UserDTO, error) {
+	return s.GetUserResponse, s.GetUserError
 }
