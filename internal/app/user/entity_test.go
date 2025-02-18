@@ -58,6 +58,14 @@ func TestValidateGetUserRequest(t *testing.T) {
 		assert.NotNil(t, err)
 		assert.Equal(t, user.ErrRequiredUserID, err)
 	})
+	t.Run("Should return an error when user id is empty", func(t *testing.T) {
+		var userRequest *user.GetUserRequest
+		userRequest = nil
+		err := userRequest.Validate()
+
+		assert.NotNil(t, err)
+		assert.Equal(t, user.ErrRequiredUserID, err)
+	})
 
 	t.Run("Should return success when the request is not a uuid", func(t *testing.T) {
 		request := user.GetUserRequest("123123")

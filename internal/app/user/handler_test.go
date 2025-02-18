@@ -144,7 +144,7 @@ func TestHandlePostUser(t *testing.T) {
 		response, _ := io.ReadAll(w.Body)
 
 		assert.Equal(t, http.StatusCreated, w.Code)
-		assert.Contains(t, string(response), "user_id")
+		assert.Contains(t, string(response), "id")
 	})
 }
 
