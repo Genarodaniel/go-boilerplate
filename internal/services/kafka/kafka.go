@@ -15,6 +15,7 @@ const maxRetries = 3
 
 type KafkaInterface interface {
 	Produce(ctx context.Context, topic string, key string, body any) error
+	SerializePayload(body any) ([]byte, error)
 }
 
 type Kafka struct {

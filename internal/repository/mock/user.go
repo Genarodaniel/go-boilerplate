@@ -7,7 +7,7 @@ import (
 )
 
 type UserRepositoryMock struct {
-	repository.UserRepositoryInterface
+	repository.UserRepository
 	SaveUserResponse string
 	SaveUserError    error
 	GetUserResponse  user.UserDTO
