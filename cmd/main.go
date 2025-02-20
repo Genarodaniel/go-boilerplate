@@ -3,8 +3,8 @@ package main
 import (
 	"go-boilerplate/config"
 	"go-boilerplate/database"
-	"go-boilerplate/internal/server"
-	"go-boilerplate/services/kafka"
+	"go-boilerplate/internal/services/kafka"
+	"go-boilerplate/server"
 	"log"
 	"os"
 	"os/signal"

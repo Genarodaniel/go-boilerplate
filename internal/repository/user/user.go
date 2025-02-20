@@ -5,17 +5,17 @@ import (
 	"database/sql"
 )
 
-type OrderRepository struct {
+type UserRepository struct {
 	DB *sql.DB
 }
 
-func NewOrderRepository(db *sql.DB) *OrderRepository {
-	return &OrderRepository{
+func NewUserRepository(db *sql.DB) *UserRepository {
+	return &UserRepository{
 		DB: db,
 	}
 }
 
-func (r *OrderRepository) Save(ctx context.Context, user UserDTO) (string, error) {
+func (r *UserRepository) Save(ctx context.Context, user UserDTO) (string, error) {
 	var id string
 	var query = `
 		INSERT INTO tab_user(
@@ -51,7 +51,7 @@ func (r *OrderRepository) Save(ctx context.Context, user UserDTO) (string, error
 	return id, nil
 }
 
-func (r *OrderRepository) GetByID(ctx context.Context, userID string) (UserDTO, error) {
+func (r *UserRepository) GetByID(ctx context.Context, userID string) (UserDTO, error) {
 	var user UserDTO
 	var query = `
 		SELECT

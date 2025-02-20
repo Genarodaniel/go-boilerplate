@@ -24,7 +24,7 @@ type Kafka struct {
 func NewKafka(seeds []string) (KafkaInterface, error) {
 	client, err := kgo.NewClient(
 		kgo.SeedBrokers(seeds...),
-		kgo.RecordRetries(3),
+		kgo.RecordRetries(maxRetries),
 		kgo.RetryBackoffFn(func(retries int) time.Duration {
 			return time.Duration(retries) * 100 * time.Millisecond
 		}),

@@ -2,10 +2,11 @@ package server
 
 import (
 	"database/sql"
-	"go-boilerplate/internal/app/healthcheck"
 	"go-boilerplate/internal/app/user"
 	userRepository "go-boilerplate/internal/repository/user"
-	"go-boilerplate/services/kafka"
+	"go-boilerplate/internal/services/kafka"
+	"go-boilerplate/server/handler/healthcheck"
+	userHandler "go-boilerplate/server/handler/user"
 
 	"github.com/gin-gonic/gin"
 )
@@ -28,9 +29,9 @@ func Router(e *gin.Engine, kafkaClient *kafka.KafkaInterface, db *sql.DB) {
 	userGroup := v1.Group("/user")
 	healthCheckGroup := v1.Group("/healthcheck")
 
-	userRepository := userRepository.NewOrderRepository(db)
+	userRepository := userRepository.NewUserRepository(db)
 	userService := user.NewUserService(*kafkaClient, userRepository)
 
 	healthcheck.Router(healthCheckGroup)
-	user.Router(userGroup, userService)
+	userHandler.Router(userGroup, userService)
 }

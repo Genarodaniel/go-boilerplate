@@ -8,12 +8,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestOrderRepository_Save(t *testing.T) {
+func TestUserRepository_Save(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
 	defer db.Close()
 
-	repo := NewOrderRepository(db)
+	repo := NewUserRepository(db)
 
 	user := UserDTO{
 		Name:  "John Doe",
@@ -30,12 +30,12 @@ func TestOrderRepository_Save(t *testing.T) {
 	assert.Equal(t, "1", id)
 }
 
-func TestOrderRepository_GetByID(t *testing.T) {
+func TestUserRepository_GetByID(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
 	defer db.Close()
 
-	repo := NewOrderRepository(db)
+	repo := NewUserRepository(db)
 
 	userID := "1"
 	expectedUser := UserDTO{

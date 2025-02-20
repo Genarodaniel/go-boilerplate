@@ -1,10 +1,13 @@
 package user
 
 import (
+	"database/sql"
 	"errors"
+	"go-boilerplate/internal/app/model"
+	"go-boilerplate/internal/infra/errhandler"
 	repositoryMock "go-boilerplate/internal/repository/mock"
 	userRepository "go-boilerplate/internal/repository/user"
-	"go-boilerplate/services/kafka"
+	"go-boilerplate/internal/services/kafka"
 	"net/http/httptest"
 	"testing"
 
@@ -23,7 +26,7 @@ func TestPostUser(t *testing.T) {
 		Name:  gofakeit.Name(),
 		Email: gofakeit.Email(),
 	}
-	t.Run("should return an uuid when created a new user", func(t *testing.T) {
+	t.Run("should return an validation error", func(t *testing.T) {
 		userService := NewUserService(kafka.KafkaMock{}, repositoryMock.UserRepositoryMock{
 			SaveUserResponse: gofakeit.UUID(),
 		})
@@ -32,6 +35,19 @@ func TestPostUser(t *testing.T) {
 		assert.NotNil(t, response)
 		assert.Nil(t, err)
 		assert.Nil(t, uuid.Validate(response.ID))
+	})
+
+	t.Run("should return an uuid when created a new user", func(t *testing.T) {
+		userService := NewUserService(kafka.KafkaMock{}, repositoryMock.UserRepositoryMock{})
+		requestWithEmailError := User{
+			Name:  gofakeit.Name(),
+			Email: "not valid email",
+		}
+		response, err := userService.PostUser(ctx, requestWithEmailError)
+
+		assert.Nil(t, response)
+		assert.NotNil(t, err)
+		assert.Equal(t, errhandler.NewValidationError(model.ErrEmailInvalid.Error()), err)
 	})
 
 	t.Run("should return an error when calling db to create order", func(t *testing.T) {
@@ -45,7 +61,7 @@ func TestPostUser(t *testing.T) {
 
 		assert.Nil(t, response)
 		assert.NotNil(t, err)
-		assert.Equal(t, err, userRepositoryMock.SaveUserError)
+		assert.Equal(t, errhandler.NewApplicationError(userRepositoryMock.SaveUserError.Error()), err)
 	})
 
 	t.Run("should return an error when calling kafka producer to create user", func(t *testing.T) {
@@ -62,7 +78,7 @@ func TestPostUser(t *testing.T) {
 
 		assert.Nil(t, response)
 		assert.NotNil(t, err)
-		assert.EqualError(t, err, "error to conect to kafka")
+		assert.Equal(t, errhandler.NewApplicationError(kafkaMock.ProduceError.Error()), err)
 	})
 
 }
@@ -92,12 +108,23 @@ func TestGetUser(t *testing.T) {
 
 	t.Run("should return an error when user does not exist", func(t *testing.T) {
 		userService := NewUserService(kafka.KafkaMock{}, repositoryMock.UserRepositoryMock{
-			GetUserError: errors.New("user not found"),
+			GetUserError: sql.ErrNoRows,
 		})
 		response, err := userService.GetUser(ctx, userID)
 
 		assert.Nil(t, response)
 		assert.NotNil(t, err)
-		assert.EqualError(t, err, "user not found")
+		assert.EqualError(t, errhandler.NewNotFoundError("user not found"), err.Error())
+	})
+
+	t.Run("should return an error when user does not exist", func(t *testing.T) {
+		userService := NewUserService(kafka.KafkaMock{}, repositoryMock.UserRepositoryMock{
+			GetUserError: errors.New("sql error"),
+		})
+		response, err := userService.GetUser(ctx, userID)
+
+		assert.Nil(t, response)
+		assert.NotNil(t, err)
+		assert.EqualError(t, errhandler.NewApplicationError("sql error"), err.Error())
 	})
 }

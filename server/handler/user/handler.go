@@ -1,11 +1,18 @@
 package user
 
 import (
-	"go-boilerplate/internal/server/response"
+	"go-boilerplate/internal/app/model"
+	"go-boilerplate/internal/app/user"
+	"go-boilerplate/internal/infra/errhandler"
+	"go-boilerplate/pkg/validation"
+	"go-boilerplate/server/response"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 )
+
+var validate *validator.Validate
 
 type UserHandlerInterface interface {
 	HandlePostUser(ctx *gin.Context)
@@ -13,17 +20,18 @@ type UserHandlerInterface interface {
 }
 
 type UserHandler struct {
-	UserService UserServiceInterface
+	UserService user.UserServiceInterface
 }
 
-func NewUserHandler(UserService UserServiceInterface) *UserHandler {
+func NewUserHandler(UserService user.UserServiceInterface) *UserHandler {
+	validate = validator.New(validator.WithRequiredStructEnabled())
 	return &UserHandler{
 		UserService: UserService,
 	}
 }
 
 func (h *UserHandler) HandlePostUser(ctx *gin.Context) {
-	request := &PostUserRequest{}
+	request := &model.PostUserRequest{}
 	if err := ctx.ShouldBindJSON(request); err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, response.DefaultErrorResponse{
 			Error:   true,
@@ -32,20 +40,21 @@ func (h *UserHandler) HandlePostUser(ctx *gin.Context) {
 		return
 	}
 
-	if err := request.Validate(); err != nil {
+	if validate.Struct(request) != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, response.DefaultErrorResponse{
 			Error:   true,
-			Message: err.Error(),
+			Message: "name and email are required",
 		})
 		return
 	}
 
-	resp, err := h.UserService.PostUser(ctx, *request.ToEntity())
+	resp, err := h.UserService.PostUser(ctx, user.User{
+		Name:  request.Name,
+		Email: request.Email,
+	})
+
 	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusInternalServerError, response.DefaultErrorResponse{
-			Error:   true,
-			Message: err.Error(),
-		})
+		errhandler.HandleError(ctx, err)
 		return
 	}
 
@@ -54,21 +63,17 @@ func (h *UserHandler) HandlePostUser(ctx *gin.Context) {
 
 func (h *UserHandler) HandleGetUser(ctx *gin.Context) {
 	userID := ctx.Param("id")
-	userRequest := GetUserRequest(userID)
-	if err := userRequest.Validate(); err != nil {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, response.DefaultErrorResponse{
+	if valid := validation.IsUUID(userID); !valid {
+		ctx.AbortWithStatusJSON(http.StatusUnprocessableEntity, response.DefaultErrorResponse{
 			Error:   true,
-			Message: err.Error(),
+			Message: model.ErrInvalidUUID.Error(),
 		})
 		return
 	}
 
 	resp, err := h.UserService.GetUser(ctx, userID)
 	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusInternalServerError, response.DefaultErrorResponse{
-			Error:   true,
-			Message: err.Error(),
-		})
+		errhandler.HandleError(ctx, err)
 		return
 	}
 

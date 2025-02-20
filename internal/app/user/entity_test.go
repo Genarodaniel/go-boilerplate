@@ -1,7 +1,7 @@
-package user_test
+package user
 
 import (
-	"go-boilerplate/internal/app/user"
+	"go-boilerplate/internal/app/model"
 	"testing"
 
 	"github.com/brianvoe/gofakeit/v6"
@@ -10,72 +10,51 @@ import (
 
 func TestValidate(t *testing.T) {
 	t.Run("Should return an error when name is empty", func(t *testing.T) {
-		request := user.PostUserRequest{}
+		request := User{}
 		err := request.Validate()
 
 		assert.NotNil(t, err)
-		assert.Equal(t, user.ErrNameRequired, err)
+		assert.Equal(t, model.ErrNameRequired, err)
 	})
 
 	t.Run("Should return an error when email is empty", func(t *testing.T) {
-		request := user.PostUserRequest{
+		request := User{
 			Name: gofakeit.Name(),
 		}
 		err := request.Validate()
 
 		assert.NotNil(t, err)
-		assert.Equal(t, user.ErrEmailRequired, err)
+		assert.Equal(t, model.ErrEmailRequired, err)
 	})
 
 	t.Run("Should return an error when email is invalid", func(t *testing.T) {
-		request := user.PostUserRequest{
+		request := User{
 			Name:  gofakeit.Name(),
 			Email: "not valid email",
 		}
 		err := request.Validate()
 
 		assert.NotNil(t, err)
-		assert.Equal(t, user.ErrEmailInvalid, err)
+		assert.Equal(t, model.ErrEmailInvalid, err)
 	})
 
-	t.Run("Should return success when the request is valid", func(t *testing.T) {
-		request := user.PostUserRequest{
+	t.Run("Should return success when have an id but it's not an uuid", func(t *testing.T) {
+		request := User{
 			Name:  gofakeit.Name(),
 			Email: gofakeit.Email(),
+			ID:    "not valid uuid",
 		}
 		err := request.Validate()
 
-		assert.Nil(t, err)
-	})
-
-}
-
-func TestValidateGetUserRequest(t *testing.T) {
-	t.Run("Should return an error when user id is empty", func(t *testing.T) {
-		request := user.GetUserRequest("")
-		err := request.Validate()
-
-		assert.NotNil(t, err)
-		assert.Equal(t, user.ErrRequiredUserID, err)
-	})
-	t.Run("Should return an error when user id is empty", func(t *testing.T) {
-		var userRequest *user.GetUserRequest
-		userRequest = nil
-		err := userRequest.Validate()
-
-		assert.NotNil(t, err)
-		assert.Equal(t, user.ErrRequiredUserID, err)
-	})
-
-	t.Run("Should return success when the request is not a uuid", func(t *testing.T) {
-		request := user.GetUserRequest("123123")
-		err := request.Validate()
-
-		assert.Equal(t, user.ErrInvalidUUID, err)
+		assert.Equal(t, model.ErrInvalidUUID, err)
 	})
 
 	t.Run("Should return success when the request is valid", func(t *testing.T) {
-		request := user.GetUserRequest(gofakeit.UUID())
+		request := User{
+			Name:  gofakeit.Name(),
+			Email: gofakeit.Email(),
+			ID:    gofakeit.UUID(),
+		}
 		err := request.Validate()
 
 		assert.Nil(t, err)
