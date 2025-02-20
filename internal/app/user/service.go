@@ -10,8 +10,8 @@ import (
 )
 
 type UserServiceInterface interface {
-	PostUser(ctx context.Context, user User) (*User, error)
-	GetUser(ctx context.Context, userID string) (*User, error)
+	Register(ctx context.Context, user User) (*User, error)
+	Get(ctx context.Context, userID string) (*User, error)
 }
 
 type UserService struct {
@@ -26,7 +26,7 @@ func NewUserService(kafkaProducer kafka.KafkaInterface, userRepository repositor
 	}
 }
 
-func (s *UserService) PostUser(ctx context.Context, user User) (*User, error) {
+func (s *UserService) Register(ctx context.Context, user User) (*User, error) {
 	if err := user.Validate(); err != nil {
 		return nil, errhandler.NewValidationError(err.Error())
 	}
@@ -49,7 +49,7 @@ func (s *UserService) PostUser(ctx context.Context, user User) (*User, error) {
 	return &user, nil
 }
 
-func (s *UserService) GetUser(ctx context.Context, userID string) (*User, error) {
+func (s *UserService) Get(ctx context.Context, userID string) (*User, error) {
 	userDto, err := s.UserRepository.GetByID(ctx, userID)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -66,3 +66,21 @@ func (s *UserService) GetUser(ctx context.Context, userID string) (*User, error)
 	}, nil
 
 }
+
+// func (s *UserService) Update(ctx context.Context, userID string) (*User, error) {
+// 	userDto, err := s.UserRepository.GetByID(ctx, userID)
+// 	if err != nil {
+// 		if err == sql.ErrNoRows {
+// 			return nil, errhandler.NewNotFoundError("user not found")
+// 		}
+
+// 		return nil, errhandler.NewApplicationError(err.Error())
+// 	}
+
+// 	return &User{
+// 		ID:    userDto.ID,
+// 		Email: userDto.Email,
+// 		Name:  userDto.Name,
+// 	}, nil
+
+// }

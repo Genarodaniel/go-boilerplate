@@ -20,7 +20,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestHandlePostUser(t *testing.T) {
+func TestHandleRegister(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	kafkaMock := kafka.KafkaMock{}
 	repositoryMock := repositoryMock.UserRepositoryMock{}
@@ -34,7 +34,7 @@ func TestHandlePostUser(t *testing.T) {
 		w := httptest.NewRecorder()
 		ctx, _ := gin.CreateTestContext(w)
 		ctx.Request = httptest.NewRequest(http.MethodPost, path, nil)
-		userHandler.HandlePostUser(ctx)
+		userHandler.HandleRegister(ctx)
 
 		assert.Equal(t, http.StatusBadRequest, w.Code)
 	})
@@ -56,7 +56,7 @@ func TestHandlePostUser(t *testing.T) {
 
 		ctx.Request = httptest.NewRequest(http.MethodPost, path, ioRequest)
 
-		userHandler.HandlePostUser(ctx)
+		userHandler.HandleRegister(ctx)
 
 		response, _ := io.ReadAll(w.Body)
 
@@ -81,7 +81,7 @@ func TestHandlePostUser(t *testing.T) {
 		ctx, _ := gin.CreateTestContext(w)
 		ctx.Request = httptest.NewRequest(http.MethodPost, path, ioRequest)
 
-		userHandler.HandlePostUser(ctx)
+		userHandler.HandleRegister(ctx)
 
 		response, _ := io.ReadAll(w.Body)
 
@@ -98,7 +98,7 @@ func TestHandlePostUser(t *testing.T) {
 
 		userService := mocks.UserServiceMock{
 			UserResponse:  user.User{},
-			PostUserError: errors.New(errorMessage),
+			RegisterError: errors.New(errorMessage),
 		}
 
 		requestBytes, _ := json.Marshal(mockRequest)
@@ -111,7 +111,7 @@ func TestHandlePostUser(t *testing.T) {
 
 		ctx.Request = httptest.NewRequest(http.MethodPost, path, ioRequest)
 
-		userHandler.HandlePostUser(ctx)
+		userHandler.HandleRegister(ctx)
 
 		response, _ := io.ReadAll(w.Body)
 
@@ -129,7 +129,6 @@ func TestHandlePostUser(t *testing.T) {
 			UserResponse: user.User{
 				ID: uuid.NewString(),
 			},
-			PostUserError: nil,
 		}
 
 		requestBytes, _ := json.Marshal(mockRequest)
@@ -142,7 +141,7 @@ func TestHandlePostUser(t *testing.T) {
 		ctx, _ := gin.CreateTestContext(w)
 		ctx.Request = httptest.NewRequest(http.MethodPost, path, ioRequest)
 
-		userHandler.HandlePostUser(ctx)
+		userHandler.HandleRegister(ctx)
 
 		response, _ := io.ReadAll(w.Body)
 
@@ -151,7 +150,7 @@ func TestHandlePostUser(t *testing.T) {
 	})
 }
 
-func TestHandleGetUser(t *testing.T) {
+func TestHandleGet(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	kafkaMock := kafka.KafkaMock{}
 	repositoryMock := repositoryMock.UserRepositoryMock{}
@@ -166,21 +165,21 @@ func TestHandleGetUser(t *testing.T) {
 		ctx, _ := gin.CreateTestContext(w)
 		ctx.Request = httptest.NewRequest(http.MethodGet, path, nil)
 		ctx.Params = gin.Params{gin.Param{Key: "id", Value: "invalid-uuid"}}
-		userHandler.HandleGetUser(ctx)
+		userHandler.HandleGet(ctx)
 
 		assert.Equal(t, http.StatusUnprocessableEntity, w.Code)
 	})
 
 	t.Run("Should return error when user not found", func(t *testing.T) {
 		userService := mocks.UserServiceMock{
-			GetUserError: errors.New("user not found"),
+			GetError: errors.New("user not found"),
 		}
 		userHandler := NewUserHandler(userService)
 		w := httptest.NewRecorder()
 		ctx, _ := gin.CreateTestContext(w)
 		ctx.Request = httptest.NewRequest(http.MethodGet, path, nil)
 		ctx.Params = gin.Params{gin.Param{Key: "id", Value: uuid.NewString()}}
-		userHandler.HandleGetUser(ctx)
+		userHandler.HandleGet(ctx)
 
 		response, _ := io.ReadAll(w.Body)
 
@@ -196,14 +195,13 @@ func TestHandleGetUser(t *testing.T) {
 				Name:  gofakeit.Name(),
 				Email: gofakeit.Email(),
 			},
-			GetUserError: nil,
 		}
 		userHandler := NewUserHandler(userService)
 		w := httptest.NewRecorder()
 		ctx, _ := gin.CreateTestContext(w)
 		ctx.Request = httptest.NewRequest(http.MethodGet, path, nil)
 		ctx.Params = gin.Params{gin.Param{Key: "id", Value: userID}}
-		userHandler.HandleGetUser(ctx)
+		userHandler.HandleGet(ctx)
 
 		response, _ := io.ReadAll(w.Body)
 

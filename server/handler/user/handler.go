@@ -15,8 +15,8 @@ import (
 var validate *validator.Validate
 
 type UserHandlerInterface interface {
-	HandlePostUser(ctx *gin.Context)
-	HandleGetUser(ctx *gin.Context)
+	HandleRegister(ctx *gin.Context)
+	HandleGet(ctx *gin.Context)
 }
 
 type UserHandler struct {
@@ -30,7 +30,7 @@ func NewUserHandler(UserService user.UserServiceInterface) *UserHandler {
 	}
 }
 
-func (h *UserHandler) HandlePostUser(ctx *gin.Context) {
+func (h *UserHandler) HandleRegister(ctx *gin.Context) {
 	request := &model.PostUserRequest{}
 	if err := ctx.ShouldBindJSON(request); err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, response.DefaultErrorResponse{
@@ -48,7 +48,7 @@ func (h *UserHandler) HandlePostUser(ctx *gin.Context) {
 		return
 	}
 
-	resp, err := h.UserService.PostUser(ctx, user.User{
+	resp, err := h.UserService.Register(ctx, user.User{
 		Name:  request.Name,
 		Email: request.Email,
 	})
@@ -61,7 +61,7 @@ func (h *UserHandler) HandlePostUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, resp)
 }
 
-func (h *UserHandler) HandleGetUser(ctx *gin.Context) {
+func (h *UserHandler) HandleGet(ctx *gin.Context) {
 	userID := ctx.Param("id")
 	if valid := validation.IsUUID(userID); !valid {
 		ctx.AbortWithStatusJSON(http.StatusUnprocessableEntity, response.DefaultErrorResponse{
@@ -71,7 +71,7 @@ func (h *UserHandler) HandleGetUser(ctx *gin.Context) {
 		return
 	}
 
-	resp, err := h.UserService.GetUser(ctx, userID)
+	resp, err := h.UserService.Get(ctx, userID)
 	if err != nil {
 		errhandler.HandleError(ctx, err)
 		return

@@ -17,7 +17,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestPostUser(t *testing.T) {
+func TestRegister(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	w := httptest.NewRecorder()
 	ctx, _ := gin.CreateTestContext(w)
@@ -30,7 +30,7 @@ func TestPostUser(t *testing.T) {
 		userService := NewUserService(kafka.KafkaMock{}, repositoryMock.UserRepositoryMock{
 			SaveUserResponse: gofakeit.UUID(),
 		})
-		response, err := userService.PostUser(ctx, requestSuccess)
+		response, err := userService.Register(ctx, requestSuccess)
 
 		assert.NotNil(t, response)
 		assert.Nil(t, err)
@@ -43,7 +43,7 @@ func TestPostUser(t *testing.T) {
 			Name:  gofakeit.Name(),
 			Email: "not valid email",
 		}
-		response, err := userService.PostUser(ctx, requestWithEmailError)
+		response, err := userService.Register(ctx, requestWithEmailError)
 
 		assert.Nil(t, response)
 		assert.NotNil(t, err)
@@ -57,7 +57,7 @@ func TestPostUser(t *testing.T) {
 		}
 
 		userService := NewUserService(kafkaMock, userRepositoryMock)
-		response, err := userService.PostUser(ctx, requestSuccess)
+		response, err := userService.Register(ctx, requestSuccess)
 
 		assert.Nil(t, response)
 		assert.NotNil(t, err)
@@ -74,7 +74,7 @@ func TestPostUser(t *testing.T) {
 		}
 
 		userService := NewUserService(kafkaMock, userRepositoryMock)
-		response, err := userService.PostUser(ctx, requestSuccess)
+		response, err := userService.Register(ctx, requestSuccess)
 
 		assert.Nil(t, response)
 		assert.NotNil(t, err)
@@ -99,7 +99,7 @@ func TestGetUser(t *testing.T) {
 		userService := NewUserService(kafka.KafkaMock{}, repositoryMock.UserRepositoryMock{
 			GetUserResponse: userDto,
 		})
-		response, err := userService.GetUser(ctx, userID)
+		response, err := userService.Get(ctx, userID)
 
 		assert.NotNil(t, response)
 		assert.Nil(t, err)
@@ -110,7 +110,7 @@ func TestGetUser(t *testing.T) {
 		userService := NewUserService(kafka.KafkaMock{}, repositoryMock.UserRepositoryMock{
 			GetUserError: sql.ErrNoRows,
 		})
-		response, err := userService.GetUser(ctx, userID)
+		response, err := userService.Get(ctx, userID)
 
 		assert.Nil(t, response)
 		assert.NotNil(t, err)
@@ -121,7 +121,7 @@ func TestGetUser(t *testing.T) {
 		userService := NewUserService(kafka.KafkaMock{}, repositoryMock.UserRepositoryMock{
 			GetUserError: errors.New("sql error"),
 		})
-		response, err := userService.GetUser(ctx, userID)
+		response, err := userService.Get(ctx, userID)
 
 		assert.Nil(t, response)
 		assert.NotNil(t, err)
