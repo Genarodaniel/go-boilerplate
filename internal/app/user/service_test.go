@@ -4,12 +4,13 @@ import (
 	"database/sql"
 	"errors"
 	"go-boilerplate/internal/app/model"
-	"go-boilerplate/internal/infra/errhandler"
 	repositoryMock "go-boilerplate/internal/repository/mock"
 	userRepository "go-boilerplate/internal/repository/user"
 	"go-boilerplate/internal/services/kafka"
 	"net/http/httptest"
 	"testing"
+
+	"go-boilerplate/internal/infra/customerror"
 
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/gin-gonic/gin"
@@ -47,7 +48,7 @@ func TestRegister(t *testing.T) {
 
 		assert.Nil(t, response)
 		assert.NotNil(t, err)
-		assert.Equal(t, errhandler.NewValidationError(model.ErrEmailInvalid.Error()), err)
+		assert.Equal(t, customerror.NewValidationError(model.ErrEmailInvalid.Error()), err)
 	})
 
 	t.Run("should return an error when calling db to create order", func(t *testing.T) {
@@ -61,7 +62,7 @@ func TestRegister(t *testing.T) {
 
 		assert.Nil(t, response)
 		assert.NotNil(t, err)
-		assert.Equal(t, errhandler.NewApplicationError(userRepositoryMock.SaveUserError.Error()), err)
+		assert.Equal(t, customerror.NewApplicationError(userRepositoryMock.SaveUserError.Error()), err)
 	})
 
 	t.Run("should return an error when calling kafka producer to create user", func(t *testing.T) {
@@ -78,7 +79,7 @@ func TestRegister(t *testing.T) {
 
 		assert.Nil(t, response)
 		assert.NotNil(t, err)
-		assert.Equal(t, errhandler.NewApplicationError(kafkaMock.ProduceError.Error()), err)
+		assert.Equal(t, customerror.NewApplicationError(kafkaMock.ProduceError.Error()), err)
 	})
 
 }
@@ -114,7 +115,7 @@ func TestGetUser(t *testing.T) {
 
 		assert.Nil(t, response)
 		assert.NotNil(t, err)
-		assert.EqualError(t, errhandler.NewNotFoundError("user not found"), err.Error())
+		assert.EqualError(t, customerror.NewNotFoundError("user not found"), err.Error())
 	})
 
 	t.Run("should return an error when user does not exist", func(t *testing.T) {
@@ -125,6 +126,6 @@ func TestGetUser(t *testing.T) {
 
 		assert.Nil(t, response)
 		assert.NotNil(t, err)
-		assert.EqualError(t, errhandler.NewApplicationError("sql error"), err.Error())
+		assert.EqualError(t, customerror.NewApplicationError("sql error"), err.Error())
 	})
 }

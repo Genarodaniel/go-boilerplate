@@ -3,9 +3,9 @@ package user
 import (
 	"go-boilerplate/internal/app/model"
 	"go-boilerplate/internal/app/user"
-	"go-boilerplate/internal/infra/errhandler"
 	"go-boilerplate/pkg/validation"
 	"go-boilerplate/server/response"
+	"go-boilerplate/server/routeutils"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -54,7 +54,7 @@ func (h *UserHandler) HandleRegister(ctx *gin.Context) {
 	})
 
 	if err != nil {
-		errhandler.HandleError(ctx, err)
+		routeutils.HandleError(ctx, err)
 		return
 	}
 
@@ -73,7 +73,7 @@ func (h *UserHandler) HandleGet(ctx *gin.Context) {
 
 	resp, err := h.UserService.Get(ctx, userID)
 	if err != nil {
-		errhandler.HandleError(ctx, err)
+		routeutils.HandleError(ctx, err)
 		return
 	}
 

@@ -1,4 +1,4 @@
-package errhandler
+package customerror
 
 import "fmt"
 

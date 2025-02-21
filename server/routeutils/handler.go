@@ -1,6 +1,8 @@
-package errhandler
+package routeutils
 
 import (
+	"go-boilerplate/internal/infra/customerror"
+	"go-boilerplate/server/response"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -10,15 +12,18 @@ func HandleError(c *gin.Context, err error) {
 	var statusCode int
 
 	switch err.(type) {
-	case *ValidationError:
+	case *customerror.ValidationError:
 		statusCode = http.StatusUnprocessableEntity // 422
-	case *NotFoundError:
+	case *customerror.NotFoundError:
 		statusCode = http.StatusNotFound // 404
-	case *ApplicationError:
+	case *customerror.ApplicationError:
 		statusCode = http.StatusInternalServerError // 500
 	default:
 		statusCode = http.StatusInternalServerError // Default to 500
 	}
 
-	c.JSON(statusCode, gin.H{"error": err.Error()})
+	c.JSON(statusCode, response.DefaultErrorResponse{
+		Error:   true,
+		Message: err.Error(),
+	})
 }

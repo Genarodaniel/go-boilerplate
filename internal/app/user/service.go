@@ -3,7 +3,7 @@ package user
 import (
 	"context"
 	"database/sql"
-	"go-boilerplate/internal/infra/errhandler"
+	"go-boilerplate/internal/infra/customerror"
 	"go-boilerplate/internal/repository"
 	userRepository "go-boilerplate/internal/repository/user"
 	"go-boilerplate/internal/services/kafka"
@@ -28,7 +28,7 @@ func NewUserService(kafkaProducer kafka.KafkaInterface, userRepository repositor
 
 func (s *UserService) Register(ctx context.Context, user User) (*User, error) {
 	if err := user.Validate(); err != nil {
-		return nil, errhandler.NewValidationError(err.Error())
+		return nil, customerror.NewValidationError(err.Error())
 	}
 
 	userDto := userRepository.UserDTO{
@@ -38,12 +38,12 @@ func (s *UserService) Register(ctx context.Context, user User) (*User, error) {
 
 	userID, err := s.UserRepository.Save(ctx, userDto)
 	if err != nil {
-		return nil, errhandler.NewApplicationError(err.Error())
+		return nil, customerror.NewApplicationError(err.Error())
 	}
 
 	user.ID = userID
 	if err := s.KafkaProducer.Produce(ctx, "users", "user.create", user); err != nil {
-		return nil, errhandler.NewApplicationError(err.Error())
+		return nil, customerror.NewApplicationError(err.Error())
 	}
 
 	return &user, nil
@@ -53,10 +53,10 @@ func (s *UserService) Get(ctx context.Context, userID string) (*User, error) {
 	userDto, err := s.UserRepository.GetByID(ctx, userID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, errhandler.NewNotFoundError("user not found")
+			return nil, customerror.NewNotFoundError("user not found")
 		}
 
-		return nil, errhandler.NewApplicationError(err.Error())
+		return nil, customerror.NewApplicationError(err.Error())
 	}
 
 	return &User{
@@ -71,10 +71,10 @@ func (s *UserService) Get(ctx context.Context, userID string) (*User, error) {
 // 	userDto, err := s.UserRepository.GetByID(ctx, userID)
 // 	if err != nil {
 // 		if err == sql.ErrNoRows {
-// 			return nil, errhandler.NewNotFoundError("user not found")
+// 			return nil, customerror.NewNotFoundError("user not found")
 // 		}
 
-// 		return nil, errhandler.NewApplicationError(err.Error())
+// 		return nil, customerror.NewApplicationError(err.Error())
 // 	}
 
 // 	return &User{
