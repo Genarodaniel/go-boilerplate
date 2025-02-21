@@ -4,6 +4,7 @@
 # Local .terraform directories
 **/.terraform/*
 
+
 # .tfstate files
 *.tfstate
 *.tfstate.*
@@ -26,3 +27,7 @@ override.tf.json
 terraform.rc
 
 *.env
+
+certs
+
+/certs*
