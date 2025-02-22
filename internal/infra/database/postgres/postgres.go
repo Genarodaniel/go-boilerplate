@@ -52,7 +52,8 @@ func Migrate(db *sql.DB) {
 		}
 	}
 
-	if err := m.Up(); err != nil {
+	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
 		fmt.Printf("DATABASE MIGRATIONS: %s", err.Error())
+		panic(err)
 	}
 }
