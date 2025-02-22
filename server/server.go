@@ -2,11 +2,14 @@ package server
 
 import (
 	"database/sql"
+	"go-boilerplate/config"
 	"go-boilerplate/internal/app/user"
 	userRepository "go-boilerplate/internal/repository/user"
 	"go-boilerplate/internal/services/kafka"
 	"go-boilerplate/server/handler/healthcheck"
 	userHandler "go-boilerplate/server/handler/user"
+	"go-boilerplate/server/middleware"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -18,6 +21,7 @@ func Init(kafkaClient *kafka.KafkaInterface, db *sql.DB) *gin.Engine {
 	router := gin.New()
 	router.Use(gin.LoggerWithWriter(gin.DefaultWriter))
 	router.Use(gin.Recovery())
+	router.Use(middleware.TimeoutMiddleware(time.Duration(config.Config.ServerTimeout) * time.Second))
 
 	Router(router, kafkaClient, db)
 

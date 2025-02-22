@@ -1,4 +1,4 @@
-package auth
+package middleware
 
 import (
 	"go-boilerplate/pkg/customerror"

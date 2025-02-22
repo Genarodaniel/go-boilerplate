@@ -10,6 +10,10 @@ type AppError struct {
 type ApplicationError struct {
 	AppError
 }
+
+type TimeoutError struct {
+	AppError
+}
 type NotFoundError struct {
 	AppError
 }
@@ -38,6 +42,15 @@ func NewApplicationError(message string) error {
 	return &ApplicationError{
 		AppError: AppError{
 			Code:    "APPLICATION_ERROR",
+			Message: message,
+		},
+	}
+}
+
+func NewTimeoutError(message string) error {
+	return &TimeoutError{
+		AppError: AppError{
+			Code:    "TIMEOUT_ERROR",
 			Message: message,
 		},
 	}
