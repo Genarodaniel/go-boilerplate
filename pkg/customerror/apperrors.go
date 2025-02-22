@@ -17,6 +17,10 @@ type ValidationError struct {
 	AppError
 }
 
+type UnauthorizedError struct {
+	AppError
+}
+
 func (e *AppError) Error() string {
 	return fmt.Sprintf("%s: %s", e.Code, e.Message)
 }
@@ -43,6 +47,15 @@ func NewNotFoundError(message string) error {
 	return &NotFoundError{
 		AppError: AppError{
 			Code:    "NOT_FOUND",
+			Message: message,
+		},
+	}
+}
+
+func NewUnauthorizedError(message string) error {
+	return &UnauthorizedError{
+		AppError: AppError{
+			Code:    "AUTHORIZATION_ERROR",
 			Message: message,
 		},
 	}

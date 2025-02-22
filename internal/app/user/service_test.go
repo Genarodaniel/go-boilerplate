@@ -10,7 +10,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"go-boilerplate/internal/infra/customerror"
+	"go-boilerplate/pkg/customerror"
 
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/gin-gonic/gin"

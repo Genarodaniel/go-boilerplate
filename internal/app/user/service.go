@@ -3,10 +3,10 @@ package user
 import (
 	"context"
 	"database/sql"
-	"go-boilerplate/internal/infra/customerror"
 	"go-boilerplate/internal/repository"
 	userRepository "go-boilerplate/internal/repository/user"
 	"go-boilerplate/internal/services/kafka"
+	"go-boilerplate/pkg/customerror"
 )
 
 type UserServiceInterface interface {
