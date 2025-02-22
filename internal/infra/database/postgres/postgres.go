@@ -1,4 +1,4 @@
-package database
+package postgres
 
 import (
 	"database/sql"
@@ -44,9 +44,9 @@ func Connect() (*sql.DB, error) {
 func Migrate(db *sql.DB) {
 	driver, err := postgres.WithInstance(db, &postgres.Config{})
 	m := &migrate.Migrate{}
-	m, err = migrate.NewWithDatabaseInstance("file:..//database/migrations", config.Config.DBDriver, driver)
+	m, err = migrate.NewWithDatabaseInstance("file://../internal/infra/database/postgres/migrations", config.Config.DBDriver, driver)
 	if err != nil {
-		m, err = migrate.NewWithDatabaseInstance("file://database/migrations", config.Config.DBDriver, driver)
+		m, err = migrate.NewWithDatabaseInstance("file:///internal/infra/database/postgres/migrations", config.Config.DBDriver, driver)
 		if err != nil {
 			panic(err)
 		}

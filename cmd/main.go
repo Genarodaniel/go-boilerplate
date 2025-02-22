@@ -2,7 +2,7 @@ package main
 
 import (
 	"go-boilerplate/config"
-	"go-boilerplate/database"
+	"go-boilerplate/internal/infra/database/postgres"
 	"go-boilerplate/internal/services/kafka"
 	"go-boilerplate/server"
 	"log"
@@ -15,12 +15,12 @@ func main() {
 		panic(err)
 	}
 
-	db, err := database.Connect()
+	db, err := postgres.Connect()
 	if err != nil {
 		panic(err)
 	}
 
-	database.Migrate(db)
+	postgres.Migrate(db)
 
 	kafkaClient, err := kafka.NewKafka(config.Config.KafkaSeeds)
 	if err != nil {

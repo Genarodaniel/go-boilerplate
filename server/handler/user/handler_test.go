@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"go-boilerplate/internal/app/mocks"
 	"go-boilerplate/internal/app/model"
 	"go-boilerplate/internal/app/user"
+	"go-boilerplate/internal/infra/mock"
 	repositoryMock "go-boilerplate/internal/repository/mock"
 	"go-boilerplate/internal/services/kafka"
 	"io"
@@ -96,7 +96,7 @@ func TestHandleRegister(t *testing.T) {
 			Email: gofakeit.Email(),
 		}
 
-		userService := mocks.UserServiceMock{
+		userService := mock.UserServiceMock{
 			UserResponse:  user.User{},
 			RegisterError: errors.New(errorMessage),
 		}
@@ -125,7 +125,7 @@ func TestHandleRegister(t *testing.T) {
 			Email: gofakeit.Email(),
 		}
 
-		userService := mocks.UserServiceMock{
+		userService := mock.UserServiceMock{
 			UserResponse: user.User{
 				ID: uuid.NewString(),
 			},
@@ -171,7 +171,7 @@ func TestHandleGet(t *testing.T) {
 	})
 
 	t.Run("Should return error when user not found", func(t *testing.T) {
-		userService := mocks.UserServiceMock{
+		userService := mock.UserServiceMock{
 			GetError: errors.New("user not found"),
 		}
 		userHandler := NewUserHandler(userService)
@@ -189,7 +189,7 @@ func TestHandleGet(t *testing.T) {
 
 	t.Run("Should return user details", func(t *testing.T) {
 		userID := uuid.NewString()
-		userService := mocks.UserServiceMock{
+		userService := mock.UserServiceMock{
 			UserResponse: user.User{
 				ID:    userID,
 				Name:  gofakeit.Name(),
