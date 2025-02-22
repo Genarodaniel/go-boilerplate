@@ -2,18 +2,21 @@ migrate-up:
 	migrate -database ${POSTGRESQL_URL} -path internal/infra/database/migrations up
 
 migrate-up-force:
-	migrate -database ${POSTGRESQL_URL} -path internal/infra/database/migrations -verbose force 0000001
+	migrate -database ${POSTGRESQL_URL} -path internal/infra/database/migrations -verbose force ${MIGRATION}
 
 test:
-go test ./... -coverprofile=coverage.out && go tool cover -html=coverage.out
+	go test ./... -coverprofile=coverage.out && go tool cover -html=coverage.out
 
+generate-certificate:
+	@dir="certs"; \
+	if [[ ! -e $$dir ]]; then \
+		mkdir -p $$dir; \
+	fi; \
+	cd $$dir && openssl genpkey -algorithm RSA -out private.pem -pkeyopt rsa_keygen_bits:2048
 
-TODO LIST:
-
-1 - swagger
-2 - JWT
-2 - get/put/delete methods.
-3 - OTEL use open telemetry / FIND A LOG LIBRARY
-4 - LEARN HOW TO TERRAFORM EC2/ECS AND RDS
-5 - CI/CD
-6 - README.MD
+extract-public-key:
+	@dir="certs"; \
+	if [[ ! -e $$dir ]]; then \
+		echo "run generate-certificate first"1>&2; \
+	fi; \
+	cd $$dir && openssl rsa -in private.pem -pubout -out public.pem
