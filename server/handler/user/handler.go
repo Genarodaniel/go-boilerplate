@@ -41,8 +41,9 @@ func (h *UserHandler) HandleRegister(ctx *gin.Context) {
 	}
 
 	resp, err := h.UserService.Register(ctx, user.User{
-		Name:  request.Name,
-		Email: request.Email,
+		Name:     request.Name,
+		Email:    request.Email,
+		Password: request.Password,
 	})
 
 	if err != nil {

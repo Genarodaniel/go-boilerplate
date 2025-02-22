@@ -20,11 +20,13 @@ func (r *UserRepository) Save(ctx context.Context, user UserDTO) (string, error)
 	var query = `
 		INSERT INTO tab_user(
 			name,
-			email
+			email,
+			password
 		)
 		VALUES(
 			$1,
-			$2
+			$2,
+			$3
 		)
 		RETURNING id
 	`
@@ -38,6 +40,7 @@ func (r *UserRepository) Save(ctx context.Context, user UserDTO) (string, error)
 	result, err := stmt.QueryContext(ctx,
 		user.Name,
 		user.Email,
+		user.Password,
 	)
 	if err != nil {
 		return id, err

@@ -7,6 +7,8 @@ import (
 	userRepository "go-boilerplate/internal/repository/user"
 	"go-boilerplate/internal/services/kafka"
 	"go-boilerplate/pkg/customerror"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 type UserServiceInterface interface {
@@ -31,9 +33,12 @@ func (s *UserService) Register(ctx context.Context, user User) (*User, error) {
 		return nil, customerror.NewValidationError(err.Error())
 	}
 
+	hashPassword, _ := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+
 	userDto := userRepository.UserDTO{
-		Name:  user.Name,
-		Email: user.Email,
+		Name:     user.Name,
+		Email:    user.Email,
+		Password: string(hashPassword),
 	}
 
 	userID, err := s.UserRepository.Save(ctx, userDto)
