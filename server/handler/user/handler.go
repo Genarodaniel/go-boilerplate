@@ -40,14 +40,6 @@ func (h *UserHandler) HandleRegister(ctx *gin.Context) {
 		return
 	}
 
-	if validate.Struct(request) != nil {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, response.DefaultErrorResponse{
-			Error:   true,
-			Message: "name and email are required",
-		})
-		return
-	}
-
 	resp, err := h.UserService.Register(ctx, user.User{
 		Name:  request.Name,
 		Email: request.Email,
@@ -63,7 +55,7 @@ func (h *UserHandler) HandleRegister(ctx *gin.Context) {
 
 func (h *UserHandler) HandleGet(ctx *gin.Context) {
 	userID := ctx.Param("id")
-	if valid := validation.IsUUID(userID); !valid {
+	if valid := validation.ValidateUUID(userID); !valid {
 		ctx.AbortWithStatusJSON(http.StatusUnprocessableEntity, response.DefaultErrorResponse{
 			Error:   true,
 			Message: model.ErrInvalidUUID.Error(),

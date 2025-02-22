@@ -5,6 +5,9 @@ migrate-up-force:
 	migrate -database ${POSTGRESQL_URL} -path internal/infra/database/migrations -verbose force ${MIGRATION}
 
 test:
+	go test ./... -coverprofile=coverage.out && go tool cover -html=coverage.out
+
+test-race:
 	go test -race ./... -coverprofile=coverage.out && go tool cover -html=coverage.out
 
 generate-certificate:

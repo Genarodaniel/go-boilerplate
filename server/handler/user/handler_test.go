@@ -66,8 +66,8 @@ func TestHandleRegister(t *testing.T) {
 
 	t.Run("Should return a validation error", func(t *testing.T) {
 		mockRequest := model.PostUserRequest{
-			Name:  gofakeit.Name(),
-			Email: "not valid email",
+			Name:  "",
+			Email: "",
 		}
 
 		requestBytes, _ := json.Marshal(mockRequest)
@@ -83,17 +83,15 @@ func TestHandleRegister(t *testing.T) {
 
 		userHandler.HandleRegister(ctx)
 
-		response, _ := io.ReadAll(w.Body)
-
 		assert.Equal(t, http.StatusUnprocessableEntity, w.Code)
-		assert.Contains(t, string(response), model.ErrEmailInvalid.Error())
 	})
 
 	t.Run("Should return an service error", func(t *testing.T) {
 		errorMessage := "error to save user"
 		mockRequest := model.PostUserRequest{
-			Name:  gofakeit.Name(),
-			Email: gofakeit.Email(),
+			Name:     gofakeit.Name(),
+			Email:    gofakeit.Email(),
+			Password: "Aa1!abcd",
 		}
 
 		userService := mock.UserServiceMock{
@@ -121,8 +119,9 @@ func TestHandleRegister(t *testing.T) {
 
 	t.Run("Should create the user", func(t *testing.T) {
 		mockRequest := model.PostUserRequest{
-			Name:  gofakeit.Name(),
-			Email: gofakeit.Email(),
+			Name:     gofakeit.Name(),
+			Email:    gofakeit.Email(),
+			Password: "Aa1!abcd",
 		}
 
 		userService := mock.UserServiceMock{

@@ -24,8 +24,9 @@ func TestRegister(t *testing.T) {
 	ctx, _ := gin.CreateTestContext(w)
 
 	requestSuccess := User{
-		Name:  gofakeit.Name(),
-		Email: gofakeit.Email(),
+		Name:     gofakeit.Name(),
+		Email:    gofakeit.Email(),
+		Password: "Aa1!abcd",
 	}
 	t.Run("should return an validation error", func(t *testing.T) {
 		userService := NewUserService(kafka.KafkaMock{}, repositoryMock.UserRepositoryMock{
@@ -48,7 +49,7 @@ func TestRegister(t *testing.T) {
 
 		assert.Nil(t, response)
 		assert.NotNil(t, err)
-		assert.Equal(t, customerror.NewValidationError(model.ErrEmailInvalid.Error()), err)
+		assert.Equal(t, customerror.NewValidationError(model.ErrInvalidEmail.Error()), err)
 	})
 
 	t.Run("should return an error when calling db to create order", func(t *testing.T) {
