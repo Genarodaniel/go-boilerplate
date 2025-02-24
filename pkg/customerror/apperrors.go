@@ -11,6 +11,10 @@ type ApplicationError struct {
 	AppError
 }
 
+type RequestError struct {
+	AppError
+}
+
 type TimeoutError struct {
 	AppError
 }
@@ -69,6 +73,15 @@ func NewUnauthorizedError(message string) error {
 	return &UnauthorizedError{
 		AppError: AppError{
 			Code:    "AUTHORIZATION_ERROR",
+			Message: message,
+		},
+	}
+}
+
+func NewRequestError(message string) error {
+	return &RequestError{
+		AppError: AppError{
+			Code:    "MALFORMED_REQUEST",
 			Message: message,
 		},
 	}
