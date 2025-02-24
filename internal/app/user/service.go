@@ -3,17 +3,18 @@ package user
 import (
 	"context"
 	"database/sql"
+	"go-boilerplate/internal/app/model"
 	"go-boilerplate/internal/repository"
 	userRepository "go-boilerplate/internal/repository/user"
 	"go-boilerplate/internal/services/kafka"
+	"go-boilerplate/pkg/cryptography"
 	"go-boilerplate/pkg/customerror"
-
-	"golang.org/x/crypto/bcrypt"
 )
 
 type UserServiceInterface interface {
-	Register(ctx context.Context, user User) (*User, error)
+	Register(ctx context.Context, userRequest model.PostUserRequest) (*User, error)
 	Get(ctx context.Context, userID string) (*User, error)
+	Login(ctx context.Context, email, password string) (*model.AuthResponse, error)
 }
 
 type UserService struct {
@@ -28,30 +29,47 @@ func NewUserService(kafkaProducer kafka.KafkaInterface, userRepository repositor
 	}
 }
 
-func (s *UserService) Register(ctx context.Context, user User) (*User, error) {
-	if err := user.Validate(); err != nil {
+func (s *UserService) Login(ctx context.Context, email, password string) (*model.AuthResponse, error) {
+	return nil, nil
+}
+
+func (s *UserService) Register(ctx context.Context, userRequest model.PostUserRequest) (*User, error) {
+	user, err := NewUser(
+		userRequest.Email,
+		userRequest.Name,
+	)
+	if err != nil {
 		return nil, customerror.NewValidationError(err.Error())
 	}
 
-	hashPassword, _ := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
-
-	userDto := userRepository.UserDTO{
-		Name:     user.Name,
-		Email:    user.Email,
-		Password: string(hashPassword),
-	}
-
-	userID, err := s.UserRepository.Save(ctx, userDto)
+	secretHashed, err := cryptography.HashSecret(user.ClientSecret)
 	if err != nil {
 		return nil, customerror.NewApplicationError(err.Error())
 	}
 
-	user.ID = userID
-	if err := s.KafkaProducer.Produce(ctx, "users", "user.create", user); err != nil {
+	userDto := userRepository.UserDTO{
+		ID:           user.ID,
+		Name:         user.Name,
+		Email:        user.Email,
+		ClientSecret: secretHashed,
+		ClientID:     user.ClientID,
+	}
+
+	if err := s.UserRepository.Save(ctx, userDto); err != nil {
 		return nil, customerror.NewApplicationError(err.Error())
 	}
 
-	return &user, nil
+	userQueueRequest := model.UserQueue{
+		Name:     user.Name,
+		ClientID: user.ClientID,
+		Email:    user.Email,
+	}
+
+	if err := s.KafkaProducer.Produce(ctx, "users", "user.create", userQueueRequest); err != nil {
+		return nil, customerror.NewApplicationError(err.Error())
+	}
+
+	return user, nil
 }
 
 func (s *UserService) Get(ctx context.Context, userID string) (*User, error) {
