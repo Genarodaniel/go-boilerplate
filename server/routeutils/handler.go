@@ -22,6 +22,8 @@ func HandleError(c *gin.Context, err error) {
 		statusCode = http.StatusUnauthorized
 	case *customerror.TimeoutError:
 		statusCode = http.StatusRequestTimeout
+	case *customerror.RequestError:
+		statusCode = http.StatusBadRequest
 	default:
 		statusCode = http.StatusInternalServerError
 	}
