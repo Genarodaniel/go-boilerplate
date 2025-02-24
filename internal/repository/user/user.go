@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"database/sql"
+	"fmt"
 )
 
 type UserRepository struct {
@@ -15,43 +16,40 @@ func NewUserRepository(db *sql.DB) *UserRepository {
 	}
 }
 
-func (r *UserRepository) Save(ctx context.Context, user UserDTO) (string, error) {
-	var id string
+func (r *UserRepository) Save(ctx context.Context, user UserDTO) error {
 	var query = `
 		INSERT INTO tab_user(
 			name,
 			email,
-			password
+			client_id,
+			client_secret
 		)
 		VALUES(
 			$1,
 			$2,
-			$3
+			$3,
+			$4
 		)
-		RETURNING id
 	`
 	stmt, err := r.DB.Prepare(query)
 	if err != nil {
-		return id, err
+		return err
 	}
 
 	defer stmt.Close()
 
-	result, err := stmt.QueryContext(ctx,
+	_, err = stmt.ExecContext(ctx,
 		user.Name,
 		user.Email,
-		user.Password,
+		user.ClientID,
+		user.ClientSecret,
 	)
 	if err != nil {
-		return id, err
+		fmt.Println(err)
+		return err
 	}
 
-	result.Next()
-	err = result.Scan(
-		&id,
-	)
-
-	return id, nil
+	return nil
 }
 
 func (r *UserRepository) GetByID(ctx context.Context, userID string) (UserDTO, error) {
@@ -60,7 +58,9 @@ func (r *UserRepository) GetByID(ctx context.Context, userID string) (UserDTO, e
 		SELECT
 			id,
 			name,
-			email
+			email,
+			client_id,
+			client_secret
 		FROM tab_user
 		WHERE id = $1
 	`
@@ -76,6 +76,42 @@ func (r *UserRepository) GetByID(ctx context.Context, userID string) (UserDTO, e
 		&user.ID,
 		&user.Name,
 		&user.Email,
+		&user.ClientID,
+		&user.ClientSecret,
+	)
+	if err != nil {
+		return user, err
+	}
+
+	return user, nil
+}
+
+func (r *UserRepository) GetByClientID(ctx context.Context, clientID string) (UserDTO, error) {
+	var user UserDTO
+	var query = `
+		SELECT
+			id,
+			name,
+			email,
+			client_id,
+			client_secret
+		FROM tab_user
+		WHERE client_id = $1
+	`
+	stmt, err := r.DB.Prepare(query)
+	if err != nil {
+		return user, err
+	}
+
+	defer stmt.Close()
+
+	result := stmt.QueryRowContext(ctx, clientID)
+	err = result.Scan(
+		&user.ID,
+		&user.Name,
+		&user.Email,
+		&user.ClientID,
+		&user.ClientSecret,
 	)
 	if err != nil {
 		return user, err
