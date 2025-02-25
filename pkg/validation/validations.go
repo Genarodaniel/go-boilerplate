@@ -21,15 +21,3 @@ func ValidateUUID(id string) bool {
 	}
 	return true
 }
-
-func ValidatePassword(password string) bool {
-	lowercase := regexp.MustCompile(`[a-z]`)
-	uppercase := regexp.MustCompile(`[A-Z]`)
-	number := regexp.MustCompile(`\d`)
-	special := regexp.MustCompile(`[\W_]`) // Matches special characters (includes `_`)
-
-	return lowercase.MatchString(password) &&
-		uppercase.MatchString(password) &&
-		number.MatchString(password) &&
-		special.MatchString(password)
-}
