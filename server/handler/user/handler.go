@@ -9,10 +9,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
 )
-
-var validate *validator.Validate
 
 type UserHandlerInterface interface {
 	HandleRegister(ctx *gin.Context)
@@ -24,7 +21,6 @@ type UserHandler struct {
 }
 
 func NewUserHandler(UserService user.UserServiceInterface) *UserHandler {
-	validate = validator.New(validator.WithRequiredStructEnabled())
 	return &UserHandler{
 		UserService: UserService,
 	}
@@ -40,11 +36,7 @@ func (h *UserHandler) HandleRegister(ctx *gin.Context) {
 		return
 	}
 
-	resp, err := h.UserService.Register(ctx, user.User{
-		Name:     request.Name,
-		Email:    request.Email,
-		Password: request.Password,
-	})
+	resp, err := h.UserService.Register(ctx, *request)
 
 	if err != nil {
 		routeutils.HandleError(ctx, err)

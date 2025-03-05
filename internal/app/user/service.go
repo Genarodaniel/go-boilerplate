@@ -14,7 +14,6 @@ import (
 type UserServiceInterface interface {
 	Register(ctx context.Context, userRequest model.PostUserRequest) (*User, error)
 	Get(ctx context.Context, userID string) (*User, error)
-	Login(ctx context.Context, email, password string) (*model.AuthResponse, error)
 }
 
 type UserService struct {
@@ -27,10 +26,6 @@ func NewUserService(kafkaProducer kafka.KafkaInterface, userRepository repositor
 		KafkaProducer:  kafkaProducer,
 		UserRepository: userRepository,
 	}
-}
-
-func (s *UserService) Login(ctx context.Context, email, password string) (*model.AuthResponse, error) {
-	return nil, nil
 }
 
 func (s *UserService) Register(ctx context.Context, userRequest model.PostUserRequest) (*User, error) {
@@ -89,21 +84,3 @@ func (s *UserService) Get(ctx context.Context, userID string) (*User, error) {
 	}, nil
 
 }
-
-// func (s *UserService) Update(ctx context.Context, userID string) (*User, error) {
-// 	userDto, err := s.UserRepository.GetByID(ctx, userID)
-// 	if err != nil {
-// 		if err == sql.ErrNoRows {
-// 			return nil, customerror.NewNotFoundError("user not found")
-// 		}
-
-// 		return nil, customerror.NewApplicationError(err.Error())
-// 	}
-
-// 	return &User{
-// 		ID:    userDto.ID,
-// 		Email: userDto.Email,
-// 		Name:  userDto.Name,
-// 	}, nil
-
-// }

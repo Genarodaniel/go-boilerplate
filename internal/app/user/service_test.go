@@ -23,15 +23,12 @@ func TestRegister(t *testing.T) {
 	w := httptest.NewRecorder()
 	ctx, _ := gin.CreateTestContext(w)
 
-	requestSuccess := User{
-		Name:     gofakeit.Name(),
-		Email:    gofakeit.Email(),
-		Password: "Aa1!abcd",
+	requestSuccess := model.PostUserRequest{
+		Name:  gofakeit.Name(),
+		Email: gofakeit.Email(),
 	}
 	t.Run("should return an validation error", func(t *testing.T) {
-		userService := NewUserService(kafka.KafkaMock{}, repositoryMock.UserRepositoryMock{
-			SaveUserResponse: gofakeit.UUID(),
-		})
+		userService := NewUserService(kafka.KafkaMock{}, repositoryMock.UserRepositoryMock{})
 		response, err := userService.Register(ctx, requestSuccess)
 
 		assert.NotNil(t, response)
@@ -41,7 +38,7 @@ func TestRegister(t *testing.T) {
 
 	t.Run("should return an uuid when created a new user", func(t *testing.T) {
 		userService := NewUserService(kafka.KafkaMock{}, repositoryMock.UserRepositoryMock{})
-		requestWithEmailError := User{
+		requestWithEmailError := model.PostUserRequest{
 			Name:  gofakeit.Name(),
 			Email: "not valid email",
 		}
@@ -71,9 +68,7 @@ func TestRegister(t *testing.T) {
 			ProduceError: errors.New("error to conect to kafka"),
 		}
 
-		userRepositoryMock := repositoryMock.UserRepositoryMock{
-			SaveUserResponse: gofakeit.UUID(),
-		}
+		userRepositoryMock := repositoryMock.UserRepositoryMock{}
 
 		userService := NewUserService(kafkaMock, userRepositoryMock)
 		response, err := userService.Register(ctx, requestSuccess)
@@ -99,7 +94,7 @@ func TestGetUser(t *testing.T) {
 
 	t.Run("should return a user when user exists", func(t *testing.T) {
 		userService := NewUserService(kafka.KafkaMock{}, repositoryMock.UserRepositoryMock{
-			GetUserResponse: userDto,
+			GetUserByIDResponse: userDto,
 		})
 		response, err := userService.Get(ctx, userID)
 
@@ -110,7 +105,7 @@ func TestGetUser(t *testing.T) {
 
 	t.Run("should return an error when user does not exist", func(t *testing.T) {
 		userService := NewUserService(kafka.KafkaMock{}, repositoryMock.UserRepositoryMock{
-			GetUserError: sql.ErrNoRows,
+			GetUserByIDError: sql.ErrNoRows,
 		})
 		response, err := userService.Get(ctx, userID)
 
@@ -121,7 +116,7 @@ func TestGetUser(t *testing.T) {
 
 	t.Run("should return an error when user does not exist", func(t *testing.T) {
 		userService := NewUserService(kafka.KafkaMock{}, repositoryMock.UserRepositoryMock{
-			GetUserError: errors.New("sql error"),
+			GetUserByIDError: errors.New("sql error"),
 		})
 		response, err := userService.Get(ctx, userID)
 

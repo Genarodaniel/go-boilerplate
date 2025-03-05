@@ -26,7 +26,7 @@ func TestHandleRegister(t *testing.T) {
 	repositoryMock := repositoryMock.UserRepositoryMock{}
 	userService := user.NewUserService(kafkaMock, repositoryMock)
 	Router(&gin.Default().RouterGroup, userService)
-	path := "/user/v1/"
+	path := "/v1/user"
 
 	t.Run("Should return error when payload is empty", func(t *testing.T) {
 		userService := user.NewUserService(kafkaMock, repositoryMock)
@@ -89,9 +89,8 @@ func TestHandleRegister(t *testing.T) {
 	t.Run("Should return an service error", func(t *testing.T) {
 		errorMessage := "error to save user"
 		mockRequest := model.PostUserRequest{
-			Name:     gofakeit.Name(),
-			Email:    gofakeit.Email(),
-			Password: "Aa1!abcd",
+			Name:  gofakeit.Name(),
+			Email: gofakeit.Email(),
 		}
 
 		userService := mock.UserServiceMock{
@@ -119,9 +118,8 @@ func TestHandleRegister(t *testing.T) {
 
 	t.Run("Should create the user", func(t *testing.T) {
 		mockRequest := model.PostUserRequest{
-			Name:     gofakeit.Name(),
-			Email:    gofakeit.Email(),
-			Password: "Aa1!abcd",
+			Name:  gofakeit.Name(),
+			Email: gofakeit.Email(),
 		}
 
 		userService := mock.UserServiceMock{

@@ -11,18 +11,14 @@ type UserServiceMock struct {
 	UserResponse  user.User
 	RegisterError error
 	GetError      error
-	LoginResponse *model.AuthResponse
+	LoginResponse *model.OAuthResponse
 	LoginError    error
 }
 
-func (s UserServiceMock) Register(ctx context.Context, user user.User) (*user.User, error) {
+func (s UserServiceMock) Register(ctx context.Context, userRequest model.PostUserRequest) (*user.User, error) {
 	return &s.UserResponse, s.RegisterError
 }
 
 func (s UserServiceMock) Get(ctx context.Context, userID string) (*user.User, error) {
 	return &s.UserResponse, s.GetError
-}
-
-func (s UserServiceMock) Login(ctx context.Context, email, password string) (*model.AuthResponse, error) {
-	return s.LoginResponse, s.LoginError
 }

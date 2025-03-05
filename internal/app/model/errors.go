@@ -14,3 +14,4 @@ var ErrInvalidPasswordLength = errors.New("password should be of length between 
 var ErrInvalidPassword = errors.New("password require a combination of uppercase, lowercase, numbers, and special characters")
 var ErrRequiredCredentials = errors.New("credentials are required")
 var ErrInvalidCredentials = errors.New("credentials are invalid")
+var ErrInvalidGrantType = errors.New("invalid grant type: supported types are 'client_credentials'")

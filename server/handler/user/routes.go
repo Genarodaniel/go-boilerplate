@@ -9,6 +9,6 @@ import (
 func Router(g *gin.RouterGroup, service *user.UserService) {
 	handler := NewUserHandler(service)
 
-	g.POST("/", handler.HandleRegister)
-	g.GET("/:id", handler.HandleGet)
+	g.POST("/register", handler.HandleRegister)
+	g.GET("/", handler.HandleGet)
 }
